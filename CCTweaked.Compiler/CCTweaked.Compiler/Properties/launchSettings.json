@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CCTweaked.Compiler": {
+      "commandName": "Project",
+      "commandLineArgs": "restore"
+    }
+  }
+}

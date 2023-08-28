@@ -1,0 +1,3 @@
+[submodule "PinkJson"]
+	path = PinkJson
+	url = https://github.com/Vlas-Omsk/PinkJson
