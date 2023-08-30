@@ -19,15 +19,13 @@ namespace CCTweaked.Compiler.Commands
 
         public void Execute()
         {
-            var path = _argumentsContoller.Get("path");
+            var path = new SystemPath(_argumentsContoller.Get("path"));
 
             if (!Directory.Exists(path))
                 throw new Exception("Directory not exists");
 
-            var fullPath = Path.GetFullPath(path);
-
-            if (_configController.Config.LibraryPaths.All(x => Path.GetFullPath(x) != fullPath))
-                _configController.Config.LibraryPaths.Add(Path.GetRelativePath(Directory.GetCurrentDirectory(), path));
+            if (_configController.Config.LibraryPaths.All(x => x != path))
+                _configController.Config.LibraryPaths.Add(path);
 
             _configController.RestoreConfig();
             _configController.UpdateConfig();

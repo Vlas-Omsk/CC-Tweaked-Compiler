@@ -5,7 +5,7 @@ namespace CCTweaked.Compiler.ConfigLoaders
 {
     internal sealed class LuarcConfigLoader : IConfigLoader
     {
-        private const string _path = ".luarc.json";
+        private static readonly SystemPath _path = new SystemPath(".luarc.json");
         private const string _workspaceLibraryKey = "workspace.library";
         private readonly IJson _json;
 

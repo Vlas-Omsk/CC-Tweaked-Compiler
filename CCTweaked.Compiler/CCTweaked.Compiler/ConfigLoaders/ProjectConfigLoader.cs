@@ -6,11 +6,13 @@ namespace CCTweaked.Compiler.ConfigLoaders
 {
     internal sealed class ProjectConfigLoader : IConfigLoader
     {
-        private const string _path = ".luaproj.json";
+        private static readonly SystemPath _path = new SystemPath(".luaproj.json");
 
         public void Update(Config config)
         {
-            File.WriteAllText(_path, config.Serialize().ToJsonString(new PrettyFormatter()));
+            using var streamWriter = new StreamWriter(_path);
+
+            new PrettyFormatter().Format(config.Serialize(), streamWriter);
         }
 
         public static ProjectConfigLoader Create(Config config)

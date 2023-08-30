@@ -33,11 +33,11 @@ namespace CCTweaked.Compiler.Controllers
                 if (!Directory.Exists(metaPath))
                     Config.MetaPaths.Remove(metaPath);
 
-            if (string.IsNullOrEmpty(Config.EntryFilePath) || !File.Exists(Config.EntryFilePath))
+            if (Config.EntryFilePath != null && !File.Exists(Config.EntryFilePath))
                 Config.EntryFilePath = null;
 
-            if (Config.EntryFilePath != null)
-                Config.FilePaths.Remove(Config.EntryFilePath);
+            if (Config.EntryFilePath.HasValue)
+                Config.FilePaths.Remove(Config.EntryFilePath.Value);
 
         }
 

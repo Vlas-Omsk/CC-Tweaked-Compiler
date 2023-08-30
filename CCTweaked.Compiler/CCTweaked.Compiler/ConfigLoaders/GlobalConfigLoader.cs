@@ -1,10 +1,8 @@
-﻿using System.IO;
-
-namespace CCTweaked.Compiler.ConfigLoaders
+﻿namespace CCTweaked.Compiler.ConfigLoaders
 {
     internal sealed class GlobalConfigLoader : IConfigLoader
     {
-        public const string FilePath = "global.lua";
+        public static readonly SystemPath FilePath = new SystemPath("global.lua");
 
         public void Update(Config config)
         {
@@ -13,17 +11,22 @@ namespace CCTweaked.Compiler.ConfigLoaders
             using var streamWriter = new StreamWriter(FilePath);
 
             foreach (var filePath in config.FilePaths)
-                WriteModele(streamWriter, filePath);
+                WriteModel(streamWriter, filePath);
 
             foreach (var libraryPath in config.LibraryPaths)
                 foreach (var filePath in DirectoryUtils.DeepEnumerateFiles(libraryPath))
-                    WriteModele(streamWriter, filePath);
+                    WriteModel(streamWriter, filePath);
         }
 
-        private static void WriteModele(StreamWriter writer, string filePath)
+        private static void WriteModel(StreamWriter writer, SystemPath filePath)
         {
-            var moduleName = ModuleUtils.GetModuleNameFromFilePath(filePath);
-            var modulePath = Path.ChangeExtension(filePath.Replace(Path.DirectorySeparatorChar, '.'), null);
+            var moduleName = filePath.GetModuleName();
+            var modulePath = Path.ChangeExtension(
+                filePath.GetRelativePath()
+                    .Path
+                    .Replace(Path.DirectorySeparatorChar, '.'),
+                null
+            );
 
             writer.WriteLine($"{moduleName} = require('{modulePath}')");
         }

@@ -19,7 +19,7 @@ namespace CCTweaked.Compiler.Commands
         {
             _configController.RestoreConfig();
 
-            if (string.IsNullOrEmpty(_configController.Config.EntryFilePath))
+            if (_configController.Config.EntryFilePath == null)
                 throw new Exception("Entry file not set");
 
             File.Delete(_outputFilePath);
@@ -44,13 +44,11 @@ namespace CCTweaked.Compiler.Commands
             streamReader.Dispose();
         }
 
-        private static void WriteModule(StreamWriter writer, string filePath)
+        private static void WriteModule(StreamWriter writer, SystemPath filePath)
         {
-            var moduleName = ModuleUtils.GetModuleNameFromFilePath(filePath);
-
             var reader = new StreamReader(filePath);
 
-            writer.Write($"{moduleName} = (function () ");
+            writer.Write($"{filePath.GetModuleName()} = (function () ");
 
             var codeTrimmer = new CodeTrimmer(writer, reader);
             codeTrimmer.Trim();

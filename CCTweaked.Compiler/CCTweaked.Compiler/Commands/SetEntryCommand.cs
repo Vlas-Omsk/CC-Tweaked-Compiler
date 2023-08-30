@@ -19,7 +19,7 @@ namespace CCTweaked.Compiler.Commands
 
         public void Execute()
         {
-            var path = _argumentsContoller.Get("path");
+            var path = new SystemPath(_argumentsContoller.Get("path"));
 
             if (!TryFindExistingLuaFile(path, out path))
                 throw new Exception("File not exists");
@@ -30,7 +30,7 @@ namespace CCTweaked.Compiler.Commands
             _configController.UpdateConfig();
         }
 
-        private static bool TryFindExistingLuaFile(string path, out string newPath)
+        private static bool TryFindExistingLuaFile(SystemPath path, out SystemPath newPath)
         {
             if (File.Exists(path))
             {
@@ -38,7 +38,7 @@ namespace CCTweaked.Compiler.Commands
                 return true;
             }
 
-            if (string.IsNullOrEmpty(Path.GetExtension(path)))
+            if (string.IsNullOrEmpty(path.GetExtension()))
                 path += ".lua";
 
             if (File.Exists(path))

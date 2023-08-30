@@ -19,25 +19,23 @@ namespace CCTweaked.Compiler.Commands
 
         public void Execute()
         {
-            var path = _argumentsContoller.Get("path");
+            var path = new SystemPath(_argumentsContoller.Get("path"));
 
             path = CreateLuaFileIfNotExists(path);
 
-            var fullPath = Path.GetFullPath(path);
-
-            if (_configController.Config.FilePaths.All(x => Path.GetFullPath(x) != fullPath))
-                _configController.Config.FilePaths.Add(Path.GetRelativePath(Directory.GetCurrentDirectory(), path));
+            if (_configController.Config.FilePaths.All(x => x != path))
+                _configController.Config.FilePaths.Add(path);
 
             _configController.RestoreConfig();
             _configController.UpdateConfig();
         }
 
-        private string CreateLuaFileIfNotExists(string path)
+        private static SystemPath CreateLuaFileIfNotExists(SystemPath path)
         {
             if (File.Exists(path))
                 return path;
 
-            if (string.IsNullOrEmpty(Path.GetExtension(path)))
+            if (string.IsNullOrEmpty(path.GetExtension()))
                 path += ".lua";
 
             if (File.Exists(path))

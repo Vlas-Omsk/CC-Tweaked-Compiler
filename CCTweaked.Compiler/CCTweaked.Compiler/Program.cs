@@ -2,6 +2,8 @@
 using CCTweaked.Compiler.Controllers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PinkJson2;
+using PinkJson2.Formatters;
 
 namespace CCTweaked.Compiler
 {
@@ -33,6 +35,40 @@ namespace CCTweaked.Compiler
 
         private static void Main(string[] args)
         {
+            TypeConverter.Default.AddPrimitiveType(typeof(SystemPath));
+            TypeConverter.Default.Register(new TypeConversion(
+                typeof(SystemPath),
+                TypeConversionDirection.ToType,
+                (object obj, Type targetType, ref bool handled) =>
+                {
+                    if (obj is string @string)
+                    {
+                        handled = true;
+                        return new SystemPath(@string);
+                    }
+
+                    handled = false;
+                    return null;
+                }
+            ));
+            TypeConverter.Default.Register(new TypeConversion(
+                typeof(SystemPath),
+                TypeConversionDirection.FromType,
+                (object obj, Type targetType, ref bool handled) =>
+                {
+                    if (targetType == typeof(FormattedValue))
+                    {
+                        handled = true;
+                        return new FormattedValue(
+                            ((SystemPath)obj).GetRelativePath()
+                        );
+                    }
+
+                    handled = false;
+                    return null;
+                }
+            ));
+
             var serviceCollection = new ServiceCollection();
 
             var configController = new ConfigController();
