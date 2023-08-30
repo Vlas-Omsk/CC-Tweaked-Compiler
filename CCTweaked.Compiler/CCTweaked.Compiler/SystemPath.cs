@@ -14,10 +14,13 @@
                 throw new ArgumentNullException("path");
 
             Path = path;
-            Type = System.IO.Path.IsPathRooted(Path) ? SystemPathType.Absolute : SystemPathType.Relative;
+            Type = System.IO.Path.IsPathRooted(Path) ?
+                SystemPathType.Absolute :
+                SystemPathType.Relative;
         }
 
-        public SystemPath(params string[] paths) : this(System.IO.Path.Combine(paths))
+        public SystemPath(params string[] paths) :
+            this(System.IO.Path.Combine(paths))
         {
         }
 
@@ -26,15 +29,17 @@
 
         public SystemPath GetAbsolutePath()
         {
-            switch (Type)
+            return GetAbsolutePathString();
+        }
+
+        private string GetAbsolutePathString()
+        {
+            return Type switch
             {
-                case SystemPathType.Absolute:
-                    return new SystemPath(Path);
-                case SystemPathType.Relative:
-                    return new SystemPath(System.IO.Path.GetFullPath(Path));
-                default:
-                    throw new InvalidOperationException();
-            }
+                SystemPathType.Absolute => Path,
+                SystemPathType.Relative => System.IO.Path.GetFullPath(Path),
+                _ => throw new InvalidOperationException(),
+            };
         }
 
         public SystemPath GetRelativePath()
@@ -45,7 +50,7 @@
         public SystemPath GetRelativePath(string relativeTo)
         {
             return new SystemPath(
-                System.IO.Path.GetRelativePath(relativeTo, GetAbsolutePath().Path)
+                System.IO.Path.GetRelativePath(relativeTo, GetAbsolutePathString())
             );
         }
 
@@ -61,12 +66,12 @@
 
         public override int GetHashCode()
         {
-            return GetAbsolutePath().GetHashCode();
+            return GetAbsolutePathString().GetHashCode();
         }
 
         public bool Equals(string value)
         {
-            return GetAbsolutePath().Path == System.IO.Path.GetFullPath(value);
+            return GetAbsolutePathString() == System.IO.Path.GetFullPath(value);
         }
 
         public bool Equals(SystemPath value)
@@ -91,7 +96,7 @@
 
         public static SystemPath operator +(SystemPath left, string right)
         {
-            return new SystemPath(left.GetAbsolutePath().Path, right);
+            return new SystemPath(left.GetAbsolutePathString(), right);
         }
 
         public static bool operator ==(SystemPath left, SystemPath right)
