@@ -7,6 +7,10 @@
         private readonly StreamReader _reader;
         private char _current;
         private char? _peek;
+        private bool _prevIsMinus = false;
+        private bool _isInString = false;
+        private char _stringBeginChar = '\0';
+        private bool _prevIsWhiteSpace = false;
 
         public CodeTrimmer(StreamWriter writer, StreamReader reader)
         {
@@ -16,44 +20,102 @@
 
         public void Trim()
         {
-            var prevIsWhiteSpace = false;
-            var prevIsMinus = false;
-
             while (TryReadNext())
             {
-                if (char.IsWhiteSpace(_current))
+                if (HandleComments())
+                    continue;
+
+                if (HandleStrings())
                 {
-                    if (!prevIsWhiteSpace)
-                    {
-                        _writer.Write(" ");
-                        prevIsWhiteSpace = true;
-                    }
+                    _prevIsWhiteSpace = false;
                     continue;
                 }
 
-                prevIsWhiteSpace = false;
-
-                if (_current == '-')
-                {
-                    if (prevIsMinus)
-                    {
-                        TrimComment();
-                        prevIsMinus = false;
-                        continue;
-                    }
-
-                    prevIsMinus = true;
+                if (HandleWhiteSpaces())
                     continue;
-                }
 
-                if (prevIsMinus)
-                {
-                    _writer.Write("-");
-                    prevIsMinus = false;
-                }
+                _prevIsWhiteSpace = false;
 
                 _writer.Write(_current);
             }
+        }
+
+        private bool HandleComments()
+        {
+            if (_current == '-')
+            {
+                if (_prevIsMinus)
+                {
+                    TrimComment();
+                    _prevIsMinus = false;
+                    return true;
+                }
+
+                _prevIsMinus = true;
+                return true;
+            }
+
+            if (_prevIsMinus)
+            {
+                _writer.Write("-");
+                _prevIsMinus = false;
+            }
+
+            return false;
+        }
+
+        private bool HandleStrings()
+        {
+            if (!_isInString && 
+                _current is '\'' or '"')
+            {
+                if (_peek == _current)
+                {
+                    _writer.Write(_current);
+                    TryReadNext();
+                    _writer.Write(_current);
+                    return true;
+                }
+
+                _isInString = true;
+                _stringBeginChar = _current;
+
+                _writer.Write(_current);
+                return true;
+            }
+
+            if (_isInString)
+            {
+                if (_peek == _stringBeginChar &&
+                    _current != '\\')
+                {
+                    _writer.Write(_current);
+                    TryReadNext();
+                    _writer.Write(_stringBeginChar);
+                    _isInString = false;
+                    return true;
+                }
+
+                _writer.Write(_current);
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool HandleWhiteSpaces()
+        {
+            if (char.IsWhiteSpace(_current))
+            {
+                if (!_prevIsWhiteSpace)
+                {
+                    _writer.Write(" ");
+                    _prevIsWhiteSpace = true;
+                }
+                return true;
+            }
+
+            return false;
         }
 
         private void TrimComment()
